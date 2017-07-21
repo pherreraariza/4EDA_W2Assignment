@@ -1,22 +1,28 @@
-setwd("/Users/pherreraariza/Documents/Coursera/4_Exploratory_Data_Analysis/4EDA_W1Assignment")
+library(ggplot2)
 
-## Get the data
-file <- "./household_power_consumption.txt"
-data <- read.table(file, header = TRUE, sep=";", stringsAsFactors=FALSE, dec=".")
-dataSubset <- data[data$Date %in% c("1/2/2007","2/2/2007") ,]
+setwd("/Users/pherreraariza/Documents/Coursera/4_Exploratory_Data_Analysis")
 
-## Change format to dates and sub metering variables
-dataSubset$Sub_metering_1 <- as.numeric(dataSubset$Sub_metering_1)
-dataSubset$Sub_metering_2 <- as.numeric(dataSubset$Sub_metering_2)
-dataSubset$Sub_metering_3 <- as.numeric(dataSubset$Sub_metering_3)
-dataSubset$datetime <- strptime(paste(dataSubset$Date, dataSubset$Time, sep=" "), "%d/%m/%Y %H:%M:%S")
+# Check if files exists
 
-## Plot 3
-plot(dataSubset$datetime, dataSubset$Sub_metering_1, type="l", xlab="", ylab="Energy sub metering")
-lines(dataSubset$datetime, dataSubset$Sub_metering_2, col="red")
-lines(dataSubset$datetime, dataSubset$Sub_metering_3, col="blue")
-legend("topright", col=c("black","red","blue"), c("Sub_metering_1  ","Sub_metering_2  ", "Sub_metering_3  "),lty=c(1,1))
-       
-## Saving to file
-dev.copy(png, file="plot3.png", height=480, width=480)
+if(!exists("NEI")){
+  NEI <- readRDS("./exdata-data-NEI_data/summarySCC_PM25.rds")
+}
+if(!exists("SCC")){
+  SCC <- readRDS("./exdata-data-NEI_data/Source_Classification_Code.rds")
+}
+
+# Subset Baltimore emissions by type
+
+subsetNEI  <- NEI[NEI$fips=="24510", ]
+aggregatedTotalByYearAndType <- aggregate(Emissions ~ year + type, subsetNEI, sum)
+
+# Print and export the graph
+
+png("plot3.png", width=640, height=480)
+g <- ggplot(aggregatedTotalByYearAndType, aes(year, Emissions, color = type))
+g <- g + geom_line() +
+  xlab("year") +
+  ylab(expression('Total PM'[2.5]*" Emissions in tons")) +
+  ggtitle('Total Emissions in Baltimore City, Maryland (fips == "24510") from 1999 to 2008')
+print(g)
 dev.off()

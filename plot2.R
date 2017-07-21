@@ -1,17 +1,21 @@
-setwd("/Users/pherreraariza/Documents/Coursera/4_Exploratory_Data_Analysis/4EDA_W1Assignment")
+setwd("/Users/pherreraariza/Documents/Coursera/4_Exploratory_Data_Analysis")
 
-## Get the data
-file <- "./household_power_consumption.txt"
-data <- read.table(file, header = TRUE, sep=";", stringsAsFactors=FALSE, dec=".")
-dataSubset <- data[data$Date %in% c("1/2/2007","2/2/2007") ,]
+# Check if files exists
 
-## Change format to date and global active power variable
-dataSubset$Global_active_power <- as.numeric(dataSubset$Global_active_power)
-dataSubset$datetime <- strptime(paste(dataSubset$Date, dataSubset$Time, sep=" "), "%d/%m/%Y %H:%M:%S")
+if(!exists("NEI")){
+  NEI <- readRDS("./exdata-data-NEI_data/summarySCC_PM25.rds")
+}
+if(!exists("SCC")){
+  SCC <- readRDS("./exdata-data-NEI_data/Source_Classification_Code.rds")
+}
 
-## Plot 2
-plot(dataSubset$datetime, dataSubset$Global_active_power, type="l", xlab="", ylab="Global Active Power (kilowatts)")
+# Subset Baltimore emissions
 
-## Saving to file
-dev.copy(png, file="plot2.png", height=480, width=480)
+subsetNEI  <- NEI[NEI$fips=="24510", ]
+aggregatedTotalByYear <- aggregate(Emissions ~ year, subsetNEI, sum)
+
+# Print and export the graph
+
+png('plot2.png')
+barplot(height=aggregatedTotalByYear$Emissions/1000, names.arg=aggregatedTotalByYear$year, xlab="years", ylab=expression('total PM'[2.5]*' emission in ktons'),main=expression('Total PM'[2.5]*' in the Baltimore City, MD emissions at various years'))
 dev.off()

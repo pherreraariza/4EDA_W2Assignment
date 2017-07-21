@@ -1,18 +1,20 @@
-setwd("/Users/pherreraariza/Documents/Coursera/4_Exploratory_Data_Analysis/4EDA_W1Assignment")
+setwd("/Users/pherreraariza/Documents/Coursera/4_Exploratory_Data_Analysis")
 
-## Get the data
-file <- "./household_power_consumption.txt"
-data <- read.table(file, header = TRUE, sep=";", stringsAsFactors=FALSE, dec=".")
-dataSubset <- data[data$Date %in% c("1/2/2007","2/2/2007") ,]
+# Check if files exists
 
-## Change format to global active power variable
-dataSubset$Global_active_power <- as.numeric(dataSubset$Global_active_power)
+if(!exists("NEI")){
+  NEI <- readRDS("./exdata-data-NEI_data/summarySCC_PM25.rds")
+}
+if(!exists("SCC")){
+  SCC <- readRDS("./exdata-data-NEI_data/Source_Classification_Code.rds")
+}
 
-## Plot 1
-hist(dataSubset$Global_active_power, main="Global Active Power", 
-     xlab="Global Active Power (kilowatts)", ylab="Frequency", col="Red")
+# Calculate the emission by year
 
-## Saving to file
-dev.copy(png, file="plot1.png", height=480, width=480)
+aggregatedTotalByYear <- aggregate(Emissions ~ year, NEI, sum)
+
+# Print and export the graph
+
+png('plot1.png')
+barplot(height=aggregatedTotalByYear$Emissions/1000, names.arg=aggregatedTotalByYear$year, xlab="years", ylab=expression('total PM'[2.5]*' emission in ktons'),main=expression('Total PM'[2.5]*' emissions at various years'))
 dev.off()
-
